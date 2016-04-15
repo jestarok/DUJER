@@ -1,0 +1,113 @@
+CREATE EXTENSION postgis;
+
+SELECT postgis_full_version();
+
+Create table Persona (
+   nombre TEXT,
+   Primer_apellido TEXT,
+   Segundo_apellido TEXT,
+   Pais TEXT,
+   Idioma TEXT,
+   Direccio TEXT,
+   Telefono TEXT,
+   usuario TEXT,
+   clave TEXT
+   );
+
+Create table Client(
+   Tarjet TEXT,
+   codigo_tarjeta int,
+   fecha_exp  Date
+   )INHERITS (Persona);
+
+    
+CREATE TYPE Vehiculo_type AS (
+   placa TEXT,
+   Marca TEXT,
+   Modelo TEXT,
+   color TEXT,
+   Cyear int,
+   tarifa_km int,
+   tipo int 
+   );
+
+
+Create table Empleado(
+   Horas_MIN_semanal int,
+   Cedula TEXT,
+   fecha_nacimiento Date,
+   carro Vehiculo_type
+   )INHERITS (Persona);
+
+drop function tarifa(anyelement,anyelement)
+Create or replace function tarifa(f1 anyelement, f2 anyelement) Returns FLOAT AS $$
+        BEGIN
+                RETURN ST_Distance($1, $2);
+        END;
+$$ LANGUAGE plpgsql;
+
+insert into Empleado values('jose','perez','santos','mexico','esp','21 3 4','8091234567','jopasa','jo123',10,'CON002',to_date('1945-09-01', 'YYYY-MM-DD'),('PLAC01','MARC01','MOD001','COL001',2006,tarifa(1),1))
+select * from Empleado
+
+update  RIDE  SET ruta.distancia = 
+(select tarifa((Select (ruta).pinicial from RIDE where codigo_ride = 'RID002'),
+(select (ruta).pfinal from RIDE where codigo_ride = 'RID002')))
+where codigo_ride = 'RID002'
+
+update Ride SET costo = (ruta).distancia * 
+(select (carro).tarifa_km from empleado where Cedula = 'CON002') 
+WHERE  codigo_ride = 'RID002'
+Select st_x((ruta).pinicial) ,st_y((ruta).pinicial) from RIDE where codigo_ride = 'RID001';
+select st_x((ruta).pfinal), st_y((ruta).pfinal), (ruta).distancia from RIDE where codigo_ride = 'RID002';
+)
+insert into RIDE values ('CLI002','CON002', ('POINT(0 0)','POINT(4 4)',0),0,9,8,'PRO001',to_date('1995-09-01', 'YYYY-MM-DD'),'RID002');
+select * from RIDE 
+select ST_X((ruta).pfinal) from RIDE where codigo_ride = 'RID001';
+select tarifa(select ruta.pinicial from RIDE where , 2)
+   
+
+Create or replace function tarifa(f1 anyelement) Returns INT AS $$
+	Select tarifa from tarifas where tipo = $1; 
+$$language sql;
+
+
+Create table tarifas(
+	tarifa int,
+	tipo int
+);
+
+insert into tarifas values (70, 1)
+insert into tarifas values (100,2)
+
+
+select * from tarifas;
+
+select tarifa(1);
+
+
+CREATE TYPE Ruta AS (
+   pinicial Geometry,
+   pfinal Geometry,
+   distancia INT 
+   );
+
+create table RIDE(
+  cliente TEXT,
+  conductor TEXT,
+  ruta	Ruta, 
+  costo float,
+  Rating_cliente INT,
+  Rating_conductor INT,
+  promocion TEXT,
+  fecha Date,
+  codigo_ride TEXT
+);
+
+CREATE TABLE promocion(
+  codigo TEXT,
+  Cliente_nuevo TEXT,
+  Cliente_codigo TEXT,
+  Monto int,
+  fecha_inicio Date,
+  fecha_fin Date
+);
